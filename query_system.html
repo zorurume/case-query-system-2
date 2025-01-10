@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>前案查詢系統</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 20px auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            background-color: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .login-form, .query-form, .result-section {
+            margin-bottom: 20px;
+        }
+        input, button {
+            padding: 8px;
+            margin: 5px 0;
+            width: 100%;
+            box-sizing: border-box;
+        }
+        button {
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #45a049;
+        }
+        .hidden {
+            display: none;
+        }
+        .result-box {
+            border: 1px solid #ddd;
+            padding: 15px;
+            margin-top: 10px;
+            border-radius: 4px;
+        }
+        .status {
+            color: #666;
+            font-style: italic;
+            margin: 10px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- 登入區塊 -->
+        <div id="loginSection" class="login-form">
+            <h2>前案查詢系統</h2>
+            <input type="text" id="username" placeholder="使用者名稱">
+            <input type="password" id="password" placeholder="密碼">
+            <button onclick="login()">登入</button>
+            <p style="color: #666; font-size: 0.9em;">
+                測試帳號1: user1 / pass1<br>
+                測試帳號2: user2 / pass2
+            </p>
+        </div>
+
+        <!-- 查詢區塊 -->
+        <div id="querySection" class="query-form hidden">
+            <h3>歡迎, <span id="userDisplay"></span></h3>
+            <input type="text" id="caseNumber" placeholder="請輸入前案編號">
+            <button onclick="submitQuery()">送出查詢</button>
+            <button onclick="logout()" style="background-color: #f44336; margin-top: 10px;">登出</button>
+            
+            <!-- 查詢結果區域 -->
+            <div id="resultSection" class="result-section">
+                <div id="status" class="status"></div>
+                <div id="resultBox" class="result-box hidden"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 模擬的使用者資料
+        const users = {
+            'user1': { password: 'pass1', name: '使用者A' },
+            'user2': { password: 'pass2', name: '使用者B' }
+        };
+
+        // 模擬的案件資料
+        const mockCases = {
+            'A001': { status: '處理中', details: '案件處理中，預計下週完成初審。' },
+            'B002': { status: '已完成', details: '案件已於2024/1/5完成審核。' },
+            'C003': { status: '待補件', details: '請補充以下文件：1.身分證明 2.財產證明' }
+        };
+
+        let currentUser = null;
+
+        function login() {
+            const username = document.getElementById('username').value;
+            const password = document.getElementById('password').value;
+
+            if (users[username] && users[username].password === password) {
+                currentUser = username;
+                document.getElementById('loginSection').classList.add('hidden');
+                document.getElementById('querySection').classList.remove('hidden');
+                document.getElementById('userDisplay').textContent = users[username].name;
+            } else {
+                alert('使用者名稱或密碼錯誤！');
+            }
+        }
+
+        function logout() {
+            currentUser = null;
+            document.getElementById('loginSection').classList.remove('hidden');
+            document.getElementById('querySection').classList.add('hidden');
+            document.getElementById('username').value = '';
+            document.getElementById('password').value = '';
+            document.getElementById('caseNumber').value = '';
+            document.getElementById('resultBox').classList.add('hidden');
+        }
+
+        function submitQuery() {
+            const caseNumber = document.getElementById('caseNumber').value;
+            if (!caseNumber) {
+                alert('請輸入前案編號！');
+                return;
+            }
+
+            // 顯示查詢狀態
+            const status = document.getElementById('status');
+            status.textContent = '查詢中...';
+
+            // 模擬查詢延遲
+            setTimeout(() => {
+                const caseData = mockCases[caseNumber];
+                
+                if (caseData) {
+                    displayResult({
+                        caseNumber: caseNumber,
+                        status: caseData.status,
+                        updateTime: new Date().toLocaleString(),
+                        details: caseData.details
+                    });
+                } else {
+                    displayResult({
+                        caseNumber: caseNumber,
+                        status: '未找到',
+                        updateTime: new Date().toLocaleString(),
+                        details: '找不到此案件編號的相關資料'
+                    });
+                }
+            }, 500);
+        }
+
+        function displayResult(result) {
+            const resultBox = document.getElementById('resultBox');
+            const status = document.getElementById('status');
+            
+            status.textContent = '查詢完成';
+            resultBox.innerHTML = `
+                <h4>前案編號: ${result.caseNumber}</h4>
+                <p>狀態: ${result.status}</p>
+                <p>更新時間: ${result.updateTime}</p>
+                <p>詳細資訊:</p>
+                <p>${result.details}</p>
+            `;
+            resultBox.classList.remove('hidden');
+        }
+    </script>
+</body>
+</html>
